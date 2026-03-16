@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Istanbul Population vs Economic Indicators</title>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
-body {
-  font-family: Arial, sans-serif;
+body{
+font-family:Arial;
 }
 </style>
 </head>
 
 <body>
 
-<h1 id="datavis_header" style="text-align:center;">D3-Visualization Project 1</h1>
+<h1 id="datavis_header" style="text-align:center;">Data Visualization Recitation</h1>
 
 <svg id="chart" width="800" height="600"></svg>
 
@@ -23,126 +23,221 @@ d3.select('#datavis_header')
 .style('color','red')
 .text('Istanbul Population vs Economic Indicators');
 
-const margin = {top:50, bottom:60, left:80, right:80};
+const margin = {top:50,bottom:60,left:80,right:80};
 const width = 800 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
 const svg = d3.select('#chart')
-.attr('width', width + margin.left + margin.right)
-.attr('height', height + margin.top + margin.bottom)
+.attr('width',width+margin.left+margin.right)
+.attr('height',height+margin.top+margin.bottom)
 .append('g')
-.attr('transform', `translate(${margin.left}, ${margin.top})`);
+.attr('transform',`translate(${margin.left},${margin.top})`);
 
-Promise.all([
-  d3.csv('SampleDataTürkiyeCensus.csv'),
-  d3.csv('inflation.csv'),
-  d3.csv('GDP_per_capita.csv'),
-  d3.csv('life_expectancy.csv')
-]).then(([pop, inflation, gdp, life]) => {
 
-  const populationData = pop.map(d => ({
-    year: +d.Zaman,
-    population: +d["İstanbul"].replace(/,/g,"")
-  }));
+/* ---------- DATA ---------- */
 
-  const inflationData = inflation.map(d => ({
-    year: +d.observation_date.substring(0,4),
-    inflation: +d.FPCPITOTLZGTUR
-  }));
+const populationCSV = `Zaman,Van,Muğla,Adana,Ankara,İstanbul,İzmir
+2024,"1,118,087","1,081,867","2,280,484","5,864,049","15,701,602","4,493,242"
+2023,"1,127,612","1,066,736","2,270,298","5,803,482","15,655,924","4,479,525"
+2022,"1,128,749","1,048,185","2,274,106","5,782,285","15,907,951","4,462,056"
+2021,"1,141,015","1,021,141","2,263,373","5,747,325","15,840,900","4,425,789"
+2020,"1,149,342","1,000,773","2,258,718","5,663,322","15,462,452","4,394,694"
+2019,"1,136,757","983,142","2,237,940","5,639,076","15,519,267","4,367,251"
+2018,"1,123,784","967,487","2,220,125","5,503,985","15,067,724","4,320,519"
+2017,"1,106,891","938,751","2,216,475","5,445,026","15,029,231","4,279,677"
+2016,"1,100,190","923,773","2,201,670","5,346,518","14,804,116","4,223,545"
+2015,"1,096,397","908,877","2,183,167","5,270,575","14,657,434","4,168,415"
+2014,"1,085,542","894,509","2,165,595","5,150,072","14,377,018","4,113,072"
+2013,"1,070,113","866,665","2,149,260","5,045,083","14,160,467","4,061,074"
+2012,"1,051,975","851,145","2,125,635","4,965,542","13,854,740","4,005,459"
+2011,"1,022,532","838,324","2,108,805","4,890,893","13,624,240","3,965,232"
+2010,"1,035,418","817,503","2,085,225","4,771,716","13,255,685","3,948,848"
+2009,"1,022,310","802,381","2,062,226","4,650,802","12,915,158","3,868,308"
+2008,"1,004,369","791,424","2,026,319","4,548,939","12,697,164","3,795,978"
+2007,"979,671","766,156","2,006,650","4,466,756","12,573,836","3,739,353"
+2000,"877,524","715,328","1,849,478","4,007,860","10,018,735","3,370,866"
+1990,"637,433","562,809","1,934,907","3,236,626","7,309,190","2,694,770"
+1985,"547,216","486,290","1,725,940","3,306,327","5,842,985","2,317,829"
+1980,"468,646","438,145","1,485,743","2,854,689","4,741,890","1,976,763"
+1975,"386,314","400,796","1,240,475","2,585,293","3,904,588","1,673,966"
+1970,"325,763","368,776","1,035,377","2,041,658","3,019,032","1,427,173"
+1965,"266,840","334,973","902,712","1,644,302","2,293,823","1,234,667"
+1960,"211,034","299,611","760,803","1,321,380","1,882,092","1,063,490"`;
 
-  const gdpData = gdp.map(d => ({
-    year: +d.observation_date.substring(0,4),
-    gdp: +d.PCAGDPTRA646NWDB
-  }));
+const inflationCSV = `observation_date,FPCPITOTLZGTUR
+1960-01-01,5.66
+1965-01-01,4.55
+1970-01-01,7.92
+1975-01-01,21.22
+1980-01-01,94.26
+1985-01-01,44.96
+1990-01-01,60.30
+2000-01-01,54.91
+2010-01-01,8.56
+2015-01-01,7.67
+2020-01-01,12.27
+2022-01-01,72.30
+2023-01-01,53.85
+2024-01-01,58.50`;
 
-  const lifeData = life.map(d => ({
-    year: +d.observation_date.substring(0,4),
-    lifeExp: +d.SPDYNLE00INTUR
-  }));
+const gdpCSV = `observation_date,PCAGDPTRA646NWDB
+1960-01-01,267
+1965-01-01,370
+1970-01-01,488
+1975-01-01,1122
+1980-01-01,1516
+1985-01-01,1326
+1990-01-01,2690
+2000-01-01,4199
+2010-01-01,10699
+2015-01-01,11065
+2020-01-01,8798
+2022-01-01,10898
+2023-01-01,13375
+2024-01-01,15892`;
 
-  const merged = populationData
-  .filter(d => d.year >= 1960)
-  .map(p => {
+const lifeCSV = `observation_date,SPDYNLE00INTUR
+1960-01-01,50.8
+1965-01-01,54.1
+1970-01-01,56.7
+1975-01-01,59.5
+1980-01-01,62.7
+1985-01-01,65.3
+1990-01-01,67.8
+2000-01-01,71.9
+2010-01-01,74.9
+2015-01-01,76.5
+2020-01-01,76.5
+2022-01-01,77.6
+2023-01-01,77.1`;
 
-    const infl = inflationData.find(d => d.year === p.year);
-    const g = gdpData.find(d => d.year === p.year);
-    const l = lifeData.find(d => d.year === p.year);
 
-    return {
-      year: p.year,
-      population: p.population,
-      inflation: infl ? infl.inflation : null,
-      gdp: g ? g.gdp : null,
-      lifeExp: l ? l.lifeExp : null
-    };
+/* ---------- PARSE DATA ---------- */
 
-  });
+const pop = d3.csvParse(populationCSV);
+const inflation = d3.csvParse(inflationCSV);
+const gdp = d3.csvParse(gdpCSV);
+const life = d3.csvParse(lifeCSV);
 
-  const data = merged
-  .filter(d => d.year >= 1960 && d.year <= 2024)
-  .filter(d => d.year % 5 === 0 || d.year >= 2022)
-  .sort((a,b) => a.year - b.year);
 
-  const x = d3.scaleBand()
-  .domain(data.map(d => d.year))
-  .range([0,width])
-  .padding(0.2);
+/* ---------- CLEAN DATA ---------- */
 
-  const y = d3.scaleLinear()
-  .domain([0, d3.max(data,d=>d.population)])
-  .range([height,0]);
+const populationData = pop.map(d=>({
+year:+d.Zaman,
+population:+d["İstanbul"].replace(/,/g,"")
+}));
 
-  const lifeScale = d3.scaleLinear()
-  .domain(d3.extent(data,d=>d.lifeExp))
-  .range([height,0]);
+const inflationData = inflation.map(d=>({
+year:+d.observation_date.substring(0,4),
+inflation:+d.FPCPITOTLZGTUR
+}));
 
-  const color = d3.scaleSequential()
-  .domain(d3.extent(data,d=>d.inflation))
-  .interpolator(d3.interpolateOrRd);
+const gdpData = gdp.map(d=>({
+year:+d.observation_date.substring(0,4),
+gdp:+d.PCAGDPTRA646NWDB
+}));
 
-  svg.append('g')
-  .attr('transform',`translate(0,${height})`)
-  .call(d3.axisBottom(x));
+const lifeData = life.map(d=>({
+year:+d.observation_date.substring(0,4),
+lifeExp:+d.SPDYNLE00INTUR
+}));
 
-  svg.append('g')
-  .call(d3.axisLeft(y));
 
-  svg.append('g')
-  .attr('transform',`translate(${width},0)`)
-  .call(d3.axisRight(lifeScale));
+/* ---------- MERGE ---------- */
 
-  svg.selectAll('rect')
-  .data(data)
-  .enter()
-  .append('rect')
-  .attr('x', d => x(d.year))
-  .attr('y', d => y(d.population))
-  .attr('width', x.bandwidth())
-  .attr('height', d => height - y(d.population))
-  .attr('fill', d => color(d.inflation));
+const merged = populationData
+.filter(d=>d.year>=1960)
+.map(p=>{
+const infl = inflationData.find(d=>d.year===p.year);
+const g = gdpData.find(d=>d.year===p.year);
+const l = lifeData.find(d=>d.year===p.year);
 
-  svg.selectAll('.label')
-  .data(data)
-  .enter()
-  .append('text')
-  .attr('x', d => x(d.year) + x.bandwidth()/2)
-  .attr('y', d => y(d.population)-5)
-  .attr('text-anchor','middle')
-  .style('font-size','10px')
-  .text(d => "$" + Math.round(d.gdp));
-
-  const line = d3.line()
-  .x(d => x(d.year) + x.bandwidth()/2)
-  .y(d => lifeScale(d.lifeExp));
-
-  svg.append('path')
-  .datum(data)
-  .attr('fill','none')
-  .attr('stroke','blue')
-  .attr('stroke-width',2)
-  .attr('d', line);
-
+return{
+year:p.year,
+population:p.population,
+inflation:infl?infl.inflation:null,
+gdp:g?g.gdp:null,
+lifeExp:l?l.lifeExp:null
+};
 });
+
+const data = merged
+.filter(d=>d.year%5===0 || d.year>=2022)
+.sort((a,b)=>a.year-b.year);
+
+
+/* ---------- SCALES ---------- */
+
+const x = d3.scaleBand()
+.domain(data.map(d=>d.year))
+.range([0,width])
+.padding(0.2);
+
+const y = d3.scaleLinear()
+.domain([0,d3.max(data,d=>d.population)])
+.range([height,0]);
+
+const lifeScale = d3.scaleLinear()
+.domain(d3.extent(data,d=>d.lifeExp))
+.range([height,0]);
+
+const color = d3.scaleSequential()
+.domain(d3.extent(data,d=>d.inflation))
+.interpolator(d3.interpolateOrRd);
+
+
+/* ---------- AXES ---------- */
+
+svg.append("g")
+.attr("transform",`translate(0,${height})`)
+.call(d3.axisBottom(x));
+
+svg.append("g")
+.call(d3.axisLeft(y));
+
+svg.append("g")
+.attr("transform",`translate(${width},0)`)
+.call(d3.axisRight(lifeScale));
+
+
+/* ---------- BARS ---------- */
+
+svg.selectAll("rect")
+.data(data)
+.enter()
+.append("rect")
+.attr("x",d=>x(d.year))
+.attr("y",d=>y(d.population))
+.attr("width",x.bandwidth())
+.attr("height",d=>height-y(d.population))
+.attr("fill",d=>color(d.inflation));
+
+
+/* ---------- GDP LABELS ---------- */
+
+svg.selectAll(".label")
+.data(data)
+.enter()
+.append("text")
+.attr("x",d=>x(d.year)+x.bandwidth()/2)
+.attr("y",d=>y(d.population)-5)
+.attr("text-anchor","middle")
+.style("font-size","10px")
+.text(d=>"$"+Math.round(d.gdp));
+
+
+/* ---------- LIFE LINE ---------- */
+
+const line = d3.line()
+.x(d=>x(d.year)+x.bandwidth()/2)
+.y(d=>lifeScale(d.lifeExp));
+
+svg.append("path")
+.datum(data)
+.attr("fill","none")
+.attr("stroke","blue")
+.attr("stroke-width",2)
+.attr("d",line);
 
 </script>
 
