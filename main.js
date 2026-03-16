@@ -19,8 +19,6 @@ Promise.all([
   d3.csv('./src/life_expectancy.csv')
 ]).then(([pop, inflation, gdp, life]) => {
 
-  /* ---- CLEAN DATA ---- */
-
   const populationData = pop.map(d => ({
     year: +d.Zaman,
     population: +d["İstanbul"].replace(/,/g,"")
@@ -41,8 +39,6 @@ Promise.all([
     lifeExp: +d.SPDYNLE00INTUR
   }));
 
-  /* ---- MERGE DATASETS ---- */
-
   const merged = populationData
   .filter(d => d.year >= 1960)
   .map(p => {
@@ -61,16 +57,12 @@ Promise.all([
 
   });
 
-  /* ---- EVERY 3 YEARS + SORT ---- */
-
   const data = merged
   .filter(d => d.year >= 1960 && d.year <= 2024)
   .filter(d => d.year % 5 === 0 || d.year >= 2022)
   .sort((a,b) => a.year - b.year);
 
   console.log(data);
-
-  /* ---- SCALES ---- */
 
   const x = d3.scaleBand()
   .domain(data.map(d => d.year))
@@ -89,8 +81,6 @@ Promise.all([
   .domain(d3.extent(data,d=>d.inflation))
   .interpolator(d3.interpolateOrRd);
 
-  /* ---- AXES ---- */
-
   svg.append('g')
   .attr('transform',`translate(0,${height})`)
   .call(d3.axisBottom(x));
@@ -102,8 +92,6 @@ Promise.all([
   .attr('transform',`translate(${width},0)`)
   .call(d3.axisRight(lifeScale));
 
-  /* ---- BARS (Population) ---- */
-
   svg.selectAll('rect')
   .data(data)
   .enter()
@@ -114,8 +102,6 @@ Promise.all([
   .attr('height', d => height - y(d.population))
   .attr('fill', d => color(d.inflation));
 
-  /* ---- GDP LABELS ---- */
-
   svg.selectAll('.label')
   .data(data)
   .enter()
@@ -125,8 +111,6 @@ Promise.all([
   .attr('text-anchor','middle')
   .style('font-size','10px')
   .text(d => "$" + Math.round(d.gdp));
-
-  /* ---- LIFE EXPECTANCY LINE ---- */
 
   const line = d3.line()
   .x(d => x(d.year) + x.bandwidth()/2)
